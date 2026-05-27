@@ -1,0 +1,242 @@
+/* ===========================
+   MÓDULO: RELOJ MÁGICO
+   =========================== */
+
+#screen-reloj {
+  min-height: 100vh;
+  background: linear-gradient(160deg, #FFF9E8 0%, #FFF5FF 100%);
+  display: flex;
+  flex-direction: column;
+}
+
+.reloj-header {
+  padding: var(--space-lg) var(--space-xl);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  animation: fadeSlideUp 0.4s ease both;
+}
+
+.reloj-content {
+  flex: 1;
+  padding: var(--space-md) var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+/* ---- INSTRUCCIÓN ---- */
+.reloj-instruccion {
+  text-align: center;
+  animation: fadeSlideUp 0.5s ease 0.1s both;
+}
+
+.reloj-instruccion h2 {
+  font-size: 1.5rem;
+  color: var(--text-dark);
+  margin-bottom: var(--space-sm);
+}
+
+.reloj-hora-objetivo {
+  display: inline-block;
+  background: var(--color-accent);
+  padding: 8px 28px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-display);
+  font-size: 2rem;
+  color: var(--text-dark);
+  box-shadow: 0 4px 0 var(--color-accent-dark);
+}
+
+/* ---- RELOJ ANALÓGICO ---- */
+.reloj-wrap {
+  position: relative;
+  animation: fadeSlideUp 0.5s ease 0.2s both;
+}
+
+.reloj-svg {
+  width: 260px;
+  height: 260px;
+  filter: drop-shadow(0 12px 30px rgba(0,0,0,0.15));
+}
+
+/* Cara del reloj */
+.reloj-cara {
+  fill: #FFFEF5;
+  stroke: #E8D8A0;
+  stroke-width: 4;
+}
+
+/* Números del reloj */
+.reloj-numero {
+  font-family: var(--font-display);
+  font-size: 14px;
+  fill: var(--text-dark);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+
+/* Marcas de horas */
+.reloj-marca {
+  stroke: #C8B870;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.reloj-marca-hora {
+  stroke-width: 4;
+  stroke: #8B7840;
+}
+
+/* Manecillas */
+.manecilla-hora {
+  stroke: var(--color-primary);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transform-origin: center;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 2px 4px rgba(255,107,53,0.4));
+}
+
+.manecilla-minuto {
+  stroke: var(--color-secondary);
+  stroke-width: 6;
+  stroke-linecap: round;
+  transform-origin: center;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 2px 4px rgba(78,205,196,0.4));
+}
+
+.reloj-centro {
+  fill: var(--text-dark);
+}
+
+/* ---- CONTROLES DEL RELOJ ---- */
+.reloj-controles {
+  display: flex;
+  gap: var(--space-md);
+  animation: fadeSlideUp 0.5s ease 0.3s both;
+}
+
+.btn-reloj {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 14px 28px;
+  border: none;
+  border-radius: var(--radius-full);
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+  user-select: none;
+}
+
+.btn-reloj-horario {
+  background: var(--color-primary);
+  color: white;
+  box-shadow: 0 6px 0 var(--color-primary-dark);
+}
+
+.btn-reloj-horario:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 9px 0 var(--color-primary-dark);
+}
+
+.btn-reloj-horario:active {
+  transform: translateY(3px);
+  box-shadow: 0 3px 0 var(--color-primary-dark);
+}
+
+.btn-reloj-antihorario {
+  background: var(--color-secondary);
+  color: white;
+  box-shadow: 0 6px 0 var(--color-secondary-dark);
+}
+
+.btn-reloj-antihorario:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 9px 0 var(--color-secondary-dark);
+}
+
+.btn-reloj-antihorario:active {
+  transform: translateY(3px);
+  box-shadow: 0 3px 0 var(--color-secondary-dark);
+}
+
+/* ---- FEEDBACK DE PROXIMIDAD ---- */
+.reloj-feedback {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  padding: 10px 24px;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-normal);
+  text-align: center;
+  animation: fadeSlideUp 0.5s ease 0.4s both;
+}
+
+.reloj-feedback.lejos {
+  background: rgba(255,71,71,0.1);
+  color: var(--color-error);
+}
+
+.reloj-feedback.cerca {
+  background: rgba(255,179,71,0.15);
+  color: #B87300;
+}
+
+.reloj-feedback.muy-cerca {
+  background: rgba(107,203,119,0.15);
+  color: #2E9B3E;
+}
+
+/* ---- BOTÓN ACEPTAR ---- */
+.reloj-aceptar-wrap {
+  animation: fadeSlideUp 0.5s ease 0.5s both;
+}
+
+/* ---- PROGRESO ---- */
+.reloj-footer {
+  padding: var(--space-lg) var(--space-xl);
+  animation: fadeSlideUp 0.5s ease 0.6s both;
+}
+
+.reloj-progreso-label {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  color: var(--text-medium);
+  margin-bottom: var(--space-sm);
+  font-size: 0.95rem;
+}
+
+/* Decoraciones del reloj */
+.reloj-borde-exterior {
+  fill: none;
+  stroke: linear-gradient(#FFD93D, #FF6B35);
+  stroke-width: 6;
+}
+
+@media (max-width: 600px) {
+  .reloj-content {
+    padding: var(--space-md);
+    gap: var(--space-md);
+  }
+
+  .reloj-svg {
+    width: 200px;
+    height: 200px;
+  }
+
+  .reloj-controles {
+    flex-direction: column;
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .btn-reloj {
+    justify-content: center;
+  }
+}

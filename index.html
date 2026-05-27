@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🦊 Aventura de Aprendizaje</title>
+  <meta name="description" content="Aplicación educativa para niños: aprende vocales, el abecedario, el reloj y más." />
+
+  <!-- CSS: Variables primero, luego globales, luego módulos -->
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/global.css" />
+  <link rel="stylesheet" href="css/inicio.css" />
+  <link rel="stylesheet" href="css/inicial.css" />
+  <link rel="stylesheet" href="css/vocales.css" />
+  <link rel="stylesheet" href="css/reloj.css" />
+  <link rel="stylesheet" href="css/manzanas.css" />
+  <link rel="stylesheet" href="css/tienda.css" />
+</head>
+<body>
+
+  <!-- Contenedor principal de la app (el router inyecta las pantallas aquí) -->
+  <div id="app"></div>
+
+  <!-- JavaScript: Módulos en orden (app.js al final porque depende de los demás) -->
+  <script src="modulos/inicio.js"></script>
+  <script src="modulos/inicial.js"></script>
+  <script src="modulos/vocales.js"></script>
+  <script src="modulos/reloj.js"></script>
+  <script src="modulos/manzanas.js"></script>
+  <script src="modulos/tienda.js"></script>
+  <script src="modulos/app.js"></script>
+
+</body>
+</html>

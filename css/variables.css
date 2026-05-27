@@ -1,0 +1,67 @@
+/* ===========================
+   VARIABLES GLOBALES
+   =========================== */
+:root {
+  /* Colores principales */
+  --color-primary: #FF6B35;
+  --color-primary-light: #FF8C61;
+  --color-primary-dark: #E04E1A;
+
+  --color-secondary: #4ECDC4;
+  --color-secondary-light: #7EDDD6;
+  --color-secondary-dark: #2FB5AC;
+
+  --color-accent: #FFD93D;
+  --color-accent-light: #FFE470;
+  --color-accent-dark: #E6BE1A;
+
+  --color-success: #6BCB77;
+  --color-error: #FF4747;
+  --color-warning: #FFB347;
+
+  /* Fondos */
+  --bg-main: #FFF9F0;
+  --bg-card: #FFFFFF;
+  --bg-dark: #2D2D3A;
+
+  /* Texto */
+  --text-dark: #2D2D3A;
+  --text-medium: #5A5A6E;
+  --text-light: #9999AA;
+  --text-white: #FFFFFF;
+
+  /* Tipografía */
+  --font-display: 'Fredoka One', cursive;
+  --font-body: 'Nunito', sans-serif;
+
+  /* Bordes */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 40px;
+  --radius-full: 9999px;
+
+  /* Sombras */
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 20px rgba(0,0,0,0.12);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.16);
+  --shadow-colored: 0 6px 24px rgba(255,107,53,0.25);
+
+  /* Espaciado */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+  --space-2xl: 64px;
+
+  /* Transiciones */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+
+  /* Z-index */
+  --z-nav: 100;
+  --z-modal: 200;
+  --z-mascota: 150;
+}
