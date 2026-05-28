@@ -1,5 +1,5 @@
 /**
- * APP.JS — Router principal, Ema (voz humana), tema global persistente, confeti
+ * APP.JS — Router principal, Ema, tema global persistente, confeti
  */
 
 const App = (() => {
