@@ -110,7 +110,7 @@ const ModuloReloj = (() => {
     document.getElementById('btn-aceptar').addEventListener('click', verificarHora);
 
     iniciarRound();
-    App.hablarVoz('Mueve las manecillas con los botones para poner la hora 🕐');
+    App.hablarVoz('Mueve las manecillas con los botones para poner la hora indicada');
   }
 
   /**
@@ -172,7 +172,7 @@ const ModuloReloj = (() => {
     actualizarReloj();
     actualizarFeedback();
 
-    App.hablarVoz(`Pon el reloj en las ${horaStr} 🕐`);
+    App.hablarVoz(`Pon el reloj en las ${horaStr} `);
   }
 
   /**
@@ -275,7 +275,7 @@ const ModuloReloj = (() => {
         },
       });
     } else {
-      App.hablarVoz(`¡Casi! La hora correcta es ${horaObjetivo.h}:${String(horaObjetivo.m).padStart(2,'0')} 🕐`);
+      App.hablarVoz(`¡Casi! La hora correcta es ${horaObjetivo.h}:${String(horaObjetivo.m).padStart(2,'0')} `);
       document.getElementById('reloj-feedback').classList.add('anim-shake');
       setTimeout(() => {
         const fb = document.getElementById('reloj-feedback');

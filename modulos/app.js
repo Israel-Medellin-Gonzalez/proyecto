@@ -4,16 +4,17 @@
 
 const App = (() => {
 
-  const SCREENS = {
-    bienvenida: { id: 'screen-bienvenida', init: () => ModuloInicio.initBienvenida() },
-    home:       { id: 'screen-home',       init: () => ModuloInicio.initHome() },
-    inicial:    { id: 'screen-inicial',    init: () => ModuloInicial.init() },
-    vocales:    { id: 'screen-vocales',    init: () => ModuloVocales.init() },
-    reloj:      { id: 'screen-reloj',      init: () => ModuloReloj.init() },
-    manzanas:   { id: 'screen-manzanas',   init: () => ModuloManzanas.init() },
+const SCREENS = {
+  bienvenida: { id: 'screen-bienvenida', init: () => ModuloInicio.initBienvenida() },
+  home:       { id: 'screen-home',       init: () => ModuloInicio.initHome() },
+  inicial:    { id: 'screen-inicial',    init: () => ModuloInicial.init() },
+  vocales:    { id: 'screen-vocales',    init: () => ModuloVocales.init() },
+  reloj:      { id: 'screen-reloj',      init: () => ModuloReloj.init() },
+  manzanas:   { id: 'screen-manzanas',   init: () => ModuloManzanas.init() },
+  clasifica:  { id: 'screen-clasifica',  init: () => ModuloClasifica.init() },
+  secuencias: { id: 'screen-secuencias', init: () => ModuloSecuencias.init() },
     tienda:     { id: 'screen-tienda',     init: () => ModuloTienda.init() },
-  };
-
+};
   let pantallaActual = null;
 
   /* ════════════════════════════════════════════════
@@ -159,42 +160,38 @@ const App = (() => {
    * Si soloSiLibre=true y ya está hablando, no interrumpe.
    */
   function hablarVoz(texto, soloSiLibre = false) {
-    // Debounce: mismo texto en menos de 350ms → ignorar
-    const ahora = Date.now();
-    if (texto === _lastTexto && ahora - _lastTs < 350) return;
-    _lastTexto = texto;
-    _lastTs    = ahora;
+  const ahora = Date.now();
 
-    // Siempre mostrar burbuja visual
-    mascotaHabla(texto);
+  // evita repetición agresiva
+  if (texto === _lastTexto && ahora - _lastTs < 400) return;
+  _lastTexto = texto;
+  _lastTs = ahora;
 
-    if (!_synth) return;
-    if (soloSiLibre && _synth.speaking) return;
+  mascotaHabla(texto);
 
-    // Cancelar voz anterior inmediatamente
-    _synth.cancel();
-    clearInterval(_freezeTimer);
+  if (!_synth) return;
+  if (soloSiLibre && _synth.speaking) return;
 
-    const u      = new SpeechSynthesisUtterance(texto);
-    u.lang       = 'es-MX';
-    u.rate       = 0.87;   // un poco lento para niños pequeños
-    u.pitch      = 1.18;   // amigable sin sonar artificial
-    u.volume     = 1;
-    if (_vozEma) u.voice = _vozEma;
+  _synth.cancel();
 
-    // Workaround: Chrome/Edge congela speechSynthesis en frases largas
-    u.onstart = () => {
-      _freezeTimer = setInterval(() => {
-        if (!_synth.speaking) { clearInterval(_freezeTimer); return; }
-        _synth.pause(); _synth.resume();
-      }, 14000);
-    };
-    u.onend   = () => clearInterval(_freezeTimer);
-    u.onerror = () => clearInterval(_freezeTimer);
+  const u = new SpeechSynthesisUtterance(texto);
 
-    // Pequeño delay para que Chrome no descarte la utterance post-cancel
-    setTimeout(() => _synth.speak(u), 90);
-  }
+  // 🌿 estilo Montessori: suave, pausado, natural
+  u.lang = 'es-MX';
+  u.rate = 0.78;      // MÁS LENTO (clave Montessori)
+  u.pitch = 1.05;     // menos caricatura, más natural
+  u.volume = 1;
+
+  if (_vozEma) u.voice = _vozEma;
+
+  u.onstart = () => {
+    // opcional: micro pausa natural antes de hablar
+  };
+
+  u.onerror = () => {};
+
+  _synth.speak(u);
+}
 
   function cancelarVoz() {
     if (_synth) _synth.cancel();
@@ -339,7 +336,23 @@ const App = (() => {
     const nombre = localStorage.getItem('nombre_usuario');
     navigate(nombre ? 'home' : 'bienvenida');
   }
+  function _asegurarPantallas() {
+  const main = document.getElementById('app');
+  if (!main) return;
 
+  Object.entries(SCREENS).forEach(([, s]) => {
+    if (!document.getElementById(s.id)) {
+      const div = document.createElement('div');
+      div.id = s.id;
+      div.style.display = 'none';
+
+      // 🆕 IMPORTANTE: mismo estilo base que otras pantallas
+      div.className = 'screen';
+
+      main.appendChild(div);
+    }
+  });
+  }
   function _inyectarKeyframes() {
     if (document.getElementById('_app_keyframes')) return;
     const s = document.createElement('style');

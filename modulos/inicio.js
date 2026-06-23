@@ -34,7 +34,22 @@ const ModuloInicio = (() => {
       desc: 'Cuenta y busca las frutas',
       icon: '🍎',
     },
+
     {
+    id: 'clasifica',
+    nombre: 'Clasifica',
+    desc: 'Agrupa los objetos',
+    icon: '🧩',
+    },
+    
+    {
+    id: 'secuencias',
+    nombre: 'Secuencias',
+    desc: 'Descubre el patrón correcto',
+    icon: '🔢',
+    },
+
+   {
       id: 'tienda',
       nombre: 'Tienda',
       desc: 'Compra tus premios',
@@ -142,7 +157,7 @@ const ModuloInicio = (() => {
           <div class="home-subtitle ${textoClass}">Tu inicial es la <strong>${inicial}</strong> · ¿Listo para aprender?</div>
         </div>
         <div class="home-puntos">
-          <span class="home-puntos__icon">⭐</span>
+          <span class="home-puntos__icon">🪙</span>
           <span class="home-puntos__valor">${puntos}</span>
         </div>
       </div>
