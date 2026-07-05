@@ -1,16 +1,11 @@
-/**
- * MÓDULO: MI INICIAL
- * El niño encuentra la letra inicial de su nombre
- */
-
 const ModuloInicial = (() => {
 
-  // Estado
+
   let nombreUsuario = '';
   let inicialCorrecta = '';
-  let fase = 1; // 1: elegir letra, 2: ver resultado
+  let fase = 1;
 
-  // Objetos por letra (emoji + nombre)
+
   const OBJETOS_POR_LETRA = {
     A: { emoji: '🍎', nombre: 'Manzana' },
     B: { emoji: '🦋', nombre: 'Mariposa' },
@@ -34,15 +29,13 @@ const ModuloInicial = (() => {
     T: { emoji: '🐢', nombre: 'Tortuga' },
     U: { emoji: '🦄', nombre: 'Unicornio' },
     V: { emoji: '🎻', nombre: 'Violín' },
-    W: { emoji: '🍉', nombre: 'Watermelon' },
-    X: { emoji: '🎮', nombre: 'Xbox' },
+    W: { emoji: '🍉', nombre: 'Sandía' },
+    X: { emoji: '🎮', nombre: 'Videojuego' },
     Y: { emoji: '🏅', nombre: 'Yate' },
-    Z: { emoji: '🦓', nombre: 'Zebra' },
+    Z: { emoji: '🦓', nombre: 'Cebra' },
   };
 
-  /**
-   * Genera 5 opciones de letras (incluyendo la correcta)
-   */
+
   function generarOpciones(correcta) {
     const todas = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
     const incorrectas = todas.filter(l => l !== correcta);
@@ -73,14 +66,11 @@ const ModuloInicial = (() => {
       <div class="inicial-content">
 
         <!-- FASE 1: ENCONTRAR LA INICIAL -->
-        <div class="inicial-pregunta">
+        <div class="inicial-instruccion">
           <h2>La inicial de tu nombre es:</h2>
-          <p>Encuentra la letra <strong>${inicialCorrecta}</strong></p>
-        </div>
-
-        <div class="inicial-pregunta" style="margin-top:-16px;">
-          <p style="font-size:1.3rem;">
-            ¡Hola, <strong>${nombreUsuario}</strong>!<br>
+          <p>Encuentra la letra <strong style="color: var(--color-primary); font-size: 1.2em;">${inicialCorrecta}</strong></p>
+          <p style="font-size: 1.1rem; margin-top: 12px;">
+            ¡Hola, <strong style="color: var(--color-primary);">${nombreUsuario}</strong>!<br>
             <span style="color:var(--text-medium);font-size:1rem;">Selecciona la inicial de tu nombre 👆</span>
           </p>
         </div>
@@ -120,7 +110,7 @@ const ModuloInicial = (() => {
 
     // Mascota
     setTimeout(() => {
-      App.hablarVoz(`¡Encuentra la letra ${inicialCorrecta}, que es la inicial de "${nombreUsuario}"! 🦊`);
+      App.hablarVoz(`¡Encuentra la letra ${inicialCorrecta}, que es la inicial de "${nombreUsuario}"!`);
     }, 600);
   }
 
@@ -143,24 +133,27 @@ const ModuloInicial = (() => {
         b.style.opacity = b === btn ? '1' : '0.4';
       });
 
-      // Mostrar resultado
-      setTimeout(() => mostrarResultado(), 700);
-
       // Sumar puntos
       App.sumarPuntos(10);
       App.marcarTareaCompletada('inicial');
-      App.hablarVoz(`¡Excelente! La ${inicialCorrecta} es tu inicial 🎉`);
+
+      // FUNCIONAL: primero felicita, y SOLO cuando termina de decirlo
+      // (onEnd, no un setTimeout adivinado) muestra el resultado y
+      // entonces narra el animal/objeto asociado a la letra.
+      App.hablarVoz(`¡Excelente! La ${inicialCorrecta} es tu inicial`, false, () => {
+        mostrarResultado();
+      });
 
     } else {
       // Incorrecta
       btn.classList.add('incorrecta');
       setTimeout(() => btn.classList.remove('incorrecta'), 500);
-      App.hablarVoz(`¡Esa no es! Busca la ${inicialCorrecta} 🔍`);
+      App.hablarVoz(`¡Esa no es! Busca la ${inicialCorrecta}`, true);
     }
   }
 
   /**
-   * Muestra el bloque de resultado
+   * Muestra el bloque de resultado y NARRA el objeto asociado a la letra
    */
   function mostrarResultado() {
     const objeto = OBJETOS_POR_LETRA[inicialCorrecta] || { emoji: '⭐', nombre: 'Especial' };
@@ -176,6 +169,11 @@ const ModuloInicial = (() => {
 
     // Scroll suave hacia resultado
     resultadoWrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    // Narrar el objeto: "La J es como Jirafa"
+    setTimeout(() => {
+      App.hablarVoz(`La ${inicialCorrecta} es como ${objeto.nombre}`);
+    }, 350);
   }
 
   return { init };

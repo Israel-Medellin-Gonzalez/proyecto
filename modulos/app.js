@@ -11,9 +11,11 @@ const SCREENS = {
   vocales:    { id: 'screen-vocales',    init: () => ModuloVocales.init() },
   reloj:      { id: 'screen-reloj',      init: () => ModuloReloj.init() },
   manzanas:   { id: 'screen-manzanas',   init: () => ModuloManzanas.init() },
+  tienda:     { id: 'screen-tienda',     init: () => ModuloTienda.init() },
   clasifica:  { id: 'screen-clasifica',  init: () => ModuloClasifica.init() },
   secuencias: { id: 'screen-secuencias', init: () => ModuloSecuencias.init() },
-    tienda:     { id: 'screen-tienda',     init: () => ModuloTienda.init() },
+  animales: { id: 'screen-animales', init: () => ModuloAnimales.init() },
+  memoria : { id: 'screen-memoria', init : () => ModuloMemoria.init()},
 };
   let pantallaActual = null;
 
@@ -55,6 +57,7 @@ const SCREENS = {
 
     // Fondo del body con el gradiente del tema
     document.body.style.background = tema.bgBody;
+    document.body.style.setProperty("--acento-tema", tema.acento);
     document.body.style.transition  = 'background 1.2s ease';
 
     // Inyectar CSS que hace TODAS las pantallas de módulo transparentes
@@ -67,7 +70,11 @@ const SCREENS = {
       #screen-vocales,
       #screen-reloj,
       #screen-manzanas,
-      #screen-tienda {
+      #screen-tienda,
+      #screen-animales,
+      #screen-clasifica,
+      #screen-memoria,
+      #screen-secuencias {
         background: transparent !important;
       }
     `;
@@ -113,7 +120,7 @@ const SCREENS = {
 
   // Frases de Ema al tocarla — rotan en orden para que siempre sea diferente
   const FRASES_EMA = [
-    '¡Hola! Soy tu amiga Ema.',
+    '¡Hola! Soy tu amigo Cronos .',
     '¡Tú puedes lograrlo, yo sé que sí!',
     '¡Sigue así, eres un campeón!',
     '¡Qué bien que estás aprendiendo hoy!',
@@ -157,40 +164,52 @@ const SCREENS = {
 
   /**
    * Ema habla en voz + burbuja visual.
-   * Si soloSiLibre=true y ya está hablando, no interrumpe.
+   * @param {string} texto
+   * @param {boolean} soloSiLibre  Si ya está hablando, no interrumpe (para errores/feedback rápido)
+   * @param {function} onEnd       Callback que se ejecuta cuando la frase TERMINA de decirse completa.
+   *                               Úsalo en vez de un setTimeout adivinado para encadenar pasos.
    */
-  function hablarVoz(texto, soloSiLibre = false) {
+function hablarVoz(texto, soloSiLibre = false, onEnd = null) {
   const ahora = Date.now();
 
   // evita repetición agresiva
-  if (texto === _lastTexto && ahora - _lastTs < 400) return;
+  if (texto === _lastTexto && ahora - _lastTs < 400) {
+    if (onEnd) onEnd();
+    return;
+  }
   _lastTexto = texto;
   _lastTs = ahora;
 
   mascotaHabla(texto);
 
-  if (!_synth) return;
-  if (soloSiLibre && _synth.speaking) return;
+  if (!_synth) { if (onEnd) onEnd(); return; }
+  if (soloSiLibre && _synth.speaking) { if (onEnd) onEnd(); return; }
 
   _synth.cancel();
 
-  const u = new SpeechSynthesisUtterance(texto);
+  setTimeout(() => {
 
-  // 🌿 estilo Montessori: suave, pausado, natural
-  u.lang = 'es-MX';
-  u.rate = 0.78;      // MÁS LENTO (clave Montessori)
-  u.pitch = 1.05;     // menos caricatura, más natural
-  u.volume = 1;
+    texto = formatearTexto(texto); // 🔥 evita que deletree nombres
 
-  if (_vozEma) u.voice = _vozEma;
+      const u = new SpeechSynthesisUtterance(texto);
+    u.lang = 'es-MX';
+    u.rate = 0.92;
+    u.pitch = 1.25; 
+    u.volume = 1;
 
-  u.onstart = () => {
-    // opcional: micro pausa natural antes de hablar
-  };
+    if (_vozEma) u.voice = _vozEma;
 
-  u.onerror = () => {};
+    u.onerror = () => { if (onEnd) onEnd(); };
+    u.onend   = () => { if (onEnd) onEnd(); };
 
-  _synth.speak(u);
+    _synth.speak(u);
+
+  }, 40); // 🔥 elimina delay
+}
+function formatearTexto(texto) {
+  return texto
+    .toLowerCase()
+    .replace(/\b\w/g, l => l.toUpperCase());
 }
 
   function cancelarVoz() {
@@ -332,10 +351,19 @@ const SCREENS = {
     _inyectarKeyframes();
     _asegurarPantallas();
     _crearEma();
+    _warmUpVoz();
+
     _aplicarTemaAlBody(getTemaGlobal());
     const nombre = localStorage.getItem('nombre_usuario');
     navigate(nombre ? 'home' : 'bienvenida');
   }
+  function _warmUpVoz() {
+  if (!_synth) return;
+
+  const u = new SpeechSynthesisUtterance('');
+  u.volume = 0;
+  _synth.speak(u);
+}
   function _asegurarPantallas() {
   const main = document.getElementById('app');
   if (!main) return;
@@ -387,6 +415,9 @@ const SCREENS = {
   /* ════════════════════════════════════════════════
      SVG DE EMA — con mejillas, nombre en camiseta
   ════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════
+     ZORRO ASISTENTE — emoji + burbuja
+  ════════════════════════════════════════════════ */
   function _crearEma() {
     if (document.getElementById('mascota-global')) return;
 
@@ -394,41 +425,7 @@ const SCREENS = {
     ema.id        = 'mascota-global';
     ema.className = 'mascota';
     ema.setAttribute('aria-label', 'Ema, tu guía');
-    ema.innerHTML = `
-      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <!-- Cola -->
-        <ellipse cx="75" cy="73" rx="15" ry="10" fill="#FF6B35" transform="rotate(-25 75 73)"/>
-        <ellipse cx="81" cy="69" rx="7"  ry="4.5" fill="#FFF0E8" transform="rotate(-25 81 69)"/>
-        <!-- Cuerpo -->
-        <ellipse cx="50" cy="69" rx="27" ry="21" fill="#FF6B35"/>
-        <ellipse cx="50" cy="73" rx="15" ry="12" fill="#FFF0E8"/>
-        <!-- Cabeza -->
-        <circle cx="50" cy="43" r="26" fill="#FF6B35"/>
-        <!-- Orejas -->
-        <polygon points="25,27 16,4  37,20" fill="#FF6B35"/>
-        <polygon points="75,27 84,4  63,20" fill="#FF6B35"/>
-        <polygon points="26,25 20,9  35,21" fill="#FFAAB0"/>
-        <polygon points="74,25 80,9  65,21" fill="#FFAAB0"/>
-        <!-- Cara blanca -->
-        <ellipse cx="50" cy="48" rx="17" ry="15" fill="#FFF0E8"/>
-        <!-- Ojos -->
-        <ellipse cx="42" cy="41" rx="4.5" ry="4.5" fill="#1A1A2E"/>
-        <ellipse cx="58" cy="41" rx="4.5" ry="4.5" fill="#1A1A2E"/>
-        <circle  cx="43.5" cy="39.5" r="1.7" fill="white"/>
-        <circle  cx="59.5" cy="39.5" r="1.7" fill="white"/>
-        <!-- Nariz -->
-        <ellipse cx="50" cy="51" rx="3.5" ry="2.5" fill="#E85D7A"/>
-        <!-- Boca -->
-        <path d="M45,55 Q50,60 55,55" stroke="#1A1A2E" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-        <!-- Mejillas -->
-        <ellipse cx="37" cy="50" rx="5" ry="3" fill="#FFB3C6" opacity="0.6"/>
-        <ellipse cx="63" cy="50" rx="5" ry="3" fill="#FFB3C6" opacity="0.6"/>
-        <!-- Nombre en camiseta -->
-        <text x="50" y="74" text-anchor="middle"
-              font-family="'Fredoka One',cursive"
-              font-size="8.5" fill="white" opacity="0.9">Ema</text>
-      </svg>
-    `;
+    ema.innerHTML = `<div class="mascota-circulo">🦊</div>`;
 
     ema.addEventListener('click', () => {
       const frase = FRASES_EMA[_fraseEmaIdx % FRASES_EMA.length];

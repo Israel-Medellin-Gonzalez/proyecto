@@ -1,10 +1,14 @@
 /**
  * MÓDULO: CLASIFICA
+ * Drag & drop (Pointer Events) + clic como alternativa accesible
+ * Corregido: el objeto solo sale del grid cuando hay arrastre REAL confirmado,
+ * nunca en un simple clic — esto evita que desaparezca y evita el trabado.
  */
 
 const ModuloClasifica = (() => {
 
   const TOTAL_RONDAS = 4;
+  const UMBRAL_ARRASTRE = 6; // px mínimos de movimiento para considerarlo arrastre real
 
   const SETS = [
     {
@@ -70,12 +74,17 @@ const ModuloClasifica = (() => {
   let objetos       = [];
   let objetoElegido = null;
   let clasificados  = 0;
+  let _drag         = null; // estado del arrastre activo (o null si no hay ninguno)
 
+  /* ════════════════════════════════════════════════
+     INIT / RONDAS
+  ════════════════════════════════════════════════ */
   function init() {
     const screen = document.getElementById('screen-clasifica');
     if (!screen) return;
 
     roundActual = 0;
+    _drag = null;
 
     screen.innerHTML = `
       <div class="clasifica-header">
@@ -86,7 +95,7 @@ const ModuloClasifica = (() => {
 
         <div class="clasifica-instruccion">
           <h2>Clasifica los objetos</h2>
-          <p>Toca un objeto y después su grupo 👆</p>
+          <p>Arrastra cada objeto a su grupo, o tócalo y luego toca el grupo 👆</p>
         </div>
 
         <div class="clasifica-objetos" id="clasifica-objetos"></div>
@@ -106,7 +115,7 @@ const ModuloClasifica = (() => {
     `;
 
     iniciarRonda();
-    App.hablarVoz('Toca un objeto y luego su grupo');
+    App.hablarVoz('Arrastra un objeto a su grupo, o tócalo y luego toca el grupo');
   }
 
   function iniciarRonda() {
@@ -117,6 +126,7 @@ const ModuloClasifica = (() => {
 
     objetoElegido = null;
     clasificados  = 0;
+    _drag = null;
 
     setActual = SETS[roundActual % SETS.length];
 
@@ -130,8 +140,12 @@ const ModuloClasifica = (() => {
     App.hablarVoz(`Busca ${setActual.categorias[0].nombre} y ${setActual.categorias[1].nombre}`);
   }
 
+  /* ════════════════════════════════════════════════
+     RENDER
+  ════════════════════════════════════════════════ */
   function renderObjetos() {
     const wrap = document.getElementById('clasifica-objetos');
+    if (!wrap) return;
     wrap.innerHTML = '';
 
     objetos.forEach((obj, i) => {
@@ -143,7 +157,13 @@ const ModuloClasifica = (() => {
       if (obj.clasificado) {
         item.classList.add('clasificado');
       } else {
-        item.addEventListener('click', () => elegirObjeto(i));
+        item.addEventListener('click', () => {
+          // Si lo que acaba de pasar fue un arrastre real, el click que el
+          // navegador dispara justo después no debe re-seleccionar nada.
+          if (_drag && _drag.fueArrastreReal) return;
+          elegirObjeto(i);
+        });
+        item.addEventListener('pointerdown', (e) => iniciarDrag(e, item, i));
       }
 
       wrap.appendChild(item);
@@ -152,6 +172,7 @@ const ModuloClasifica = (() => {
 
   function renderCategorias() {
     const wrap = document.getElementById('clasifica-categorias');
+    if (!wrap) return;
     wrap.innerHTML = '';
 
     setActual.categorias.forEach(cat => {
@@ -168,6 +189,9 @@ const ModuloClasifica = (() => {
     });
   }
 
+  /* ════════════════════════════════════════════════
+     FLUJO POR CLIC (accesible, sin arrastre)
+  ════════════════════════════════════════════════ */
   function elegirObjeto(index) {
     if (objetos[index].clasificado) return;
 
@@ -183,11 +207,154 @@ const ModuloClasifica = (() => {
 
   function elegirCategoria(catId, cardEl) {
     if (objetoElegido === null) {
-      App.hablarVoz('Primero toca un objeto');
+      App.hablarVoz('Primero toca un objeto, o arrástralo directamente');
+      return;
+    }
+    intentarClasificar(objetoElegido, catId, cardEl);
+  }
+
+  /* ════════════════════════════════════════════════
+     DRAG & DROP — Pointer Events
+     Clave: el objeto NO sale del grid hasta que el
+     movimiento supera UMBRAL_ARRASTRE. Un clic simple
+     o doble clic nunca toca su posición en el DOM.
+  ════════════════════════════════════════════════ */
+  function iniciarDrag(e, item, index) {
+    if (objetos[index].clasificado) return;
+    if (_drag) return; // ya hay un arrastre en curso, ignorar este pointerdown
+
+    item.setPointerCapture(e.pointerId);
+
+    const rect = item.getBoundingClientRect();
+
+    _drag = {
+      pointerId: e.pointerId,
+      item,
+      index,
+      startX: e.clientX,
+      startY: e.clientY,
+      offsetX: e.clientX - rect.left,
+      offsetY: e.clientY - rect.top,
+      width: rect.width,
+      height: rect.height,
+      fueArrastreReal: false, // se vuelve true solo si supera el umbral
+      sacadoDelGrid: false,   // true solo cuando ya se movió a document.body
+    };
+
+    item.addEventListener('pointermove', onDragMove);
+    item.addEventListener('pointerup', onDragEnd);
+    item.addEventListener('pointercancel', onDragEnd);
+  }
+
+  function onDragMove(e) {
+    if (!_drag || e.pointerId !== _drag.pointerId) return;
+
+    const dx = e.clientX - _drag.startX;
+    const dy = e.clientY - _drag.startY;
+
+    if (!_drag.fueArrastreReal && (Math.abs(dx) > UMBRAL_ARRASTRE || Math.abs(dy) > UMBRAL_ARRASTRE)) {
+      _drag.fueArrastreReal = true;
+      sacarDelGrid(_drag.item);
+    }
+
+    if (_drag.fueArrastreReal) {
+      posicionarDrag(e.clientX, e.clientY);
+      resaltarCategoriaBajoPuntero(e.clientX, e.clientY);
+    }
+  }
+
+  function onDragEnd(e) {
+    if (!_drag || e.pointerId !== _drag.pointerId) return;
+
+    const { item, index, fueArrastreReal, pointerId } = _drag;
+
+    item.removeEventListener('pointermove', onDragMove);
+    item.removeEventListener('pointerup', onDragEnd);
+    item.removeEventListener('pointercancel', onDragEnd);
+
+    try { item.releasePointerCapture(pointerId); } catch (err) { /* ya liberado, sin problema */ }
+
+    if (!fueArrastreReal) {
+      // Fue un simple clic: el objeto nunca salió del grid, no hay nada que limpiar.
+      // El listener de 'click' del propio item se encarga de seleccionarlo.
+      _drag = null;
       return;
     }
 
-    const obj = objetos[objetoElegido];
+    // Sí hubo arrastre real: buscar si se soltó sobre una categoría
+    item.style.pointerEvents = 'none';
+    const debajo = document.elementFromPoint(e.clientX, e.clientY);
+    const catEl  = debajo ? debajo.closest('.clasifica-categoria') : null;
+
+    document.querySelectorAll('.clasifica-categoria').forEach(c => c.classList.remove('drag-sobre'));
+    limpiarEstiloFlotante(item);
+
+    _drag = null;
+
+    // Esperar un frame para no pelear con el navegador mientras cierra el
+    // ciclo de pointer capture — esto es lo que evita el "trabado".
+    requestAnimationFrame(() => {
+      if (item.parentNode === document.body) item.remove();
+
+      if (catEl) {
+        intentarClasificar(index, catEl.dataset.cat, catEl);
+      } else {
+        // Se soltó fuera de cualquier categoría: regresa al grid tal cual estaba
+        renderObjetos();
+      }
+    });
+  }
+
+  function sacarDelGrid(item) {
+    const rect = item.getBoundingClientRect();
+    item.classList.add('arrastrando');
+    item.style.position = 'fixed';
+    item.style.left   = `${rect.left}px`;
+    item.style.top    = `${rect.top}px`;
+    item.style.width  = `${rect.width}px`;
+    item.style.height = `${rect.height}px`;
+    item.style.zIndex = '9999';
+    document.body.appendChild(item);
+    if (_drag) _drag.sacadoDelGrid = true;
+  }
+
+  function posicionarDrag(clientX, clientY) {
+    if (!_drag) return;
+    const { item, offsetX, offsetY } = _drag;
+    item.style.left = `${clientX - offsetX}px`;
+    item.style.top  = `${clientY - offsetY}px`;
+  }
+
+  function limpiarEstiloFlotante(item) {
+    item.classList.remove('arrastrando');
+    item.style.position = '';
+    item.style.left = '';
+    item.style.top = '';
+    item.style.width = '';
+    item.style.height = '';
+    item.style.zIndex = '';
+    item.style.pointerEvents = '';
+  }
+
+  function resaltarCategoriaBajoPuntero(clientX, clientY) {
+    if (!_drag) return;
+    const prevPE = _drag.item.style.pointerEvents;
+    _drag.item.style.pointerEvents = 'none';
+    const bajoPuntero = document.elementFromPoint(clientX, clientY);
+    _drag.item.style.pointerEvents = prevPE;
+
+    const cat = bajoPuntero ? bajoPuntero.closest('.clasifica-categoria') : null;
+    document.querySelectorAll('.clasifica-categoria').forEach(c => {
+      c.classList.toggle('drag-sobre', c === cat);
+    });
+  }
+
+  /* ════════════════════════════════════════════════
+     LÓGICA COMPARTIDA — clic o drag llegan aquí
+  ════════════════════════════════════════════════ */
+  function intentarClasificar(index, catId, cardEl) {
+    const obj = objetos[index];
+    if (!obj || obj.clasificado) return;
 
     if (obj.cat === catId) {
       obj.clasificado = true;
@@ -198,6 +365,11 @@ const ModuloClasifica = (() => {
         const mini = document.createElement('span');
         mini.textContent = obj.emoji;
         zona.appendChild(mini);
+      }
+
+      if (cardEl) {
+        cardEl.classList.add('acierto');
+        setTimeout(() => cardEl.classList.remove('acierto'), 400);
       }
 
       App.sumarPuntos(1);
@@ -212,7 +384,12 @@ const ModuloClasifica = (() => {
       }
 
     } else {
+      if (cardEl) {
+        cardEl.classList.add('fallo');
+        setTimeout(() => cardEl.classList.remove('fallo'), 400);
+      }
       App.hablarVoz('Intenta otra vez');
+      renderObjetos();
     }
   }
 
@@ -230,7 +407,6 @@ const ModuloClasifica = (() => {
     if (label) label.textContent = `${roundActual} / ${TOTAL_RONDAS}`;
 
     actualizarProgresoRonda();
-
     App.sumarPuntos(1);
 
     setTimeout(() => {
@@ -252,4 +428,4 @@ const ModuloClasifica = (() => {
 
   return { init };
 
-})();   
+})();

@@ -393,3 +393,485 @@
   opacity: 1;
   transform: translateX(0) scale(1);
 }
+
+
+/* ===========================
+   MÓDULO: TIENDA — PAGO CON MONEDAS
+   Usa las mismas variables que el resto del proyecto
+   (--space-*, --radius-*, --shadow-*, --color-*, --font-*)
+   =========================== */
+
+/* ---- OVERLAY DE PAGO ---- */
+.pago-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-normal);
+  padding: var(--space-md);
+}
+
+.pago-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.pago-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-2xl);
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  animation: bounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pago-cerrar {
+  position: absolute;
+  top: var(--space-md);
+  right: var(--space-md);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: rgba(0,0,0,0.06);
+  color: var(--text-dark);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+.pago-cerrar:hover { background: rgba(0,0,0,0.12); }
+
+/* ---- INFO DEL JUGUETE ---- */
+.pago-juguete-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.pago-juguete-emoji {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.pago-juguete-nombre {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  color: var(--text-dark);
+}
+
+.pago-juguete-precio {
+  font-size: 0.95rem;
+  color: var(--text-medium);
+}
+
+/* ---- ETIQUETAS ---- */
+.pago-bandeja-label,
+.pago-cartera-label {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  color: var(--text-medium);
+  margin: var(--space-xs) 0 var(--space-sm);
+}
+
+/* ---- BANDEJA DE PAGO (zona de drop) ---- */
+.pago-bandeja {
+  min-height: 100px;
+  border: 3px dashed var(--color-accent);
+  border-radius: var(--radius-lg);
+  background: rgba(255,217,61,0.08);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  margin-bottom: var(--space-sm);
+  transition: background var(--transition-normal);
+}
+
+.pago-bandeja.bandeja-resaltada {
+  background: rgba(255,217,61,0.2);
+}
+
+/* ---- TOTAL + VACIAR ---- */
+.pago-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  color: var(--text-dark);
+  margin-bottom: var(--space-sm);
+}
+
+.btn-mini {
+  border: none;
+  background: rgba(0,0,0,0.06);
+  border-radius: var(--radius-full);
+  padding: 6px 16px;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  color: var(--text-dark);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+.btn-mini:hover { background: rgba(0,0,0,0.12); }
+
+/* ---- FEEDBACK ---- */
+.pago-feedback {
+  min-height: 28px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  margin-bottom: var(--space-lg);
+}
+.pago-feedback.feedback-ok    { color: #2BB673; }
+.pago-feedback.feedback-falta { color: var(--text-medium); }
+.pago-feedback.feedback-sobra { color: #E0922A; }
+
+/* ---- CARTERA (monedas disponibles) ---- */
+.pago-cartera {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  justify-content: center;
+  min-height: 70px;
+  padding: var(--space-xs) 0 var(--space-lg);
+}
+
+/* ---- PIEZAS DE DINERO ---- */
+.pieza-dinero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  user-select: none;
+  flex-shrink: 0;
+  position: relative;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.pieza-dinero:hover { transform: translateY(-2px); }
+.pieza-dinero:active { cursor: grabbing; transform: scale(0.95); }
+
+/* Estado deshabilitado: no le alcanza el dinero para esta pieza */
+.pieza-dinero.deshabilitada {
+  cursor: not-allowed;
+  opacity: 0.35;
+  filter: grayscale(0.6);
+}
+.pieza-dinero.deshabilitada:hover { transform: none; }
+
+.pieza-valor {
+  font-family: var(--font-display);
+  font-weight: 700;
+  position: relative;
+  z-index: 1;
+}
+
+/* Monedas: forma circular con relieve metálico y borde grabado,
+   imitando una moneda real (anillo exterior + disco interior). */
+.pieza-dinero.moneda {
+  border-radius: var(--radius-full);
+  box-shadow:
+    0 3px 0 rgba(0,0,0,0.18),
+    inset 0 2px 3px rgba(255,255,255,0.6),
+    inset 0 -3px 4px rgba(0,0,0,0.15);
+  border: 2px solid rgba(0,0,0,0.12);
+}
+.pieza-dinero.moneda::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: var(--radius-full);
+  border: 2px dashed rgba(0,0,0,0.22);
+  pointer-events: none;
+}
+
+/* Billete: rectangular, con bordes y franja decorativa como dinero real */
+.pieza-dinero.billete {
+  border-radius: var(--radius-md);
+  width: 96px;
+  height: 50px;
+  border: 2px solid rgba(0,0,0,0.18);
+  box-shadow:
+    0 3px 0 rgba(0,0,0,0.18),
+    inset 0 0 0 4px rgba(255,255,255,0.5);
+}
+.pieza-dinero.billete::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1.5px dashed rgba(0,0,0,0.25);
+  border-radius: 4px;
+  pointer-events: none;
+}
+.pieza-dinero.billete .pieza-valor { font-size: 1rem; }
+
+/* Colores tipo metal: plateado para chicas, dorado para grandes */
+.denominacion-1  { width: 50px; height: 50px; font-size: 1rem;   background: radial-gradient(circle at 35% 30%, #f3f6f9, #c7ced6 70%); color: #3a4750; }
+.denominacion-2  { width: 56px; height: 56px; font-size: 1.05rem; background: radial-gradient(circle at 35% 30%, #f3f6f9, #b9c2cc 70%); color: #2f3a42; }
+.denominacion-5  { width: 64px; height: 64px; font-size: 1.15rem; background: radial-gradient(circle at 35% 30%, #fff6dd, #e6c878 70%); color: #6b4f0e; }
+.denominacion-10 { width: 72px; height: 72px; font-size: 1.3rem;  background: radial-gradient(circle at 35% 30%, #fff7e0, #d9ad4a 70%); color: #5c3f08; }
+.denominacion-20 { background: radial-gradient(circle at 30% 20%, #e9e3ff, #b9aaf5 80%); color: #392c75; }
+
+@media (max-width: 600px) {
+  .pago-card { padding: var(--space-lg); }
+  .pago-cartera { gap: var(--space-sm); }
+}
+/* ========== NUEVO LAYOUT: EMA IZQUIERDA + ESTANTE DERECHA ========== */
+
+.tienda-layout {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+  padding: 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* SECCIÓN EMA (IZQUIERDA) */
+.tienda-ema-section {
+  flex: 0 0 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 20px;
+}
+
+.tienda-ema-section .tienda-ema-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+}
+
+/* Burbuja de Ema */
+.tienda-ema-section .tienda-ema-burbuja {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 16px 20px;
+  max-width: 280px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #2D2D3A;
+  border: 2px solid #FFE8D6;
+  position: relative;
+}
+
+.tienda-ema-section .tienda-ema-burbuja::before {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 20px;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 0 solid transparent;
+  border-top: 10px solid #ffffff;
+}
+
+/* SECCIÓN ESTANTE (DERECHA) */
+.tienda-estante-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ESTANTE VISUAL - MADERA ROBUSTA */
+.tienda-estante {
+  background: linear-gradient(135deg, #C89968 0%, #B8845C 50%, #A67C52 100%);
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 
+    0 15px 0 #8B6F47,
+    0 16px 0 rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.3),
+    inset 0 -4px 0 rgba(0,0,0,0.2);
+  border: 8px solid #8B6F47;
+  position: relative;
+  background-clip: padding-box;
+}
+
+/* Líneas de madera en el estante */
+.tienda-estante::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  height: 4px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.1) 0%, transparent 50%, rgba(0,0,0,0.1) 100%);
+  border-radius: 2px;
+}
+
+.tienda-estante::after {
+  content: '';
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  height: 4px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.1) 0%, transparent 50%, rgba(0,0,0,0.1) 100%);
+  border-radius: 2px;
+}
+
+/* GRID DE JUGUETES EN EL ESTANTE - 3 POR FILA */
+#juguetes-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+/* TARJETA DE JUGUETE */
+.juguete-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border: 3px solid transparent;
+  position: relative;
+}
+
+.juguete-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.juguete-card.seleccionado {
+  border-color: var(--color-primary);
+  background: #FFF5F0;
+  box-shadow: 0 6px 20px rgba(255,107,53,0.25);
+}
+
+.juguete-emoji {
+  font-size: 3.5rem;
+  display: block;
+  margin: 8px 0;
+}
+
+.juguete-nombre {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 8px 0;
+}
+
+.juguete-precio {
+  font-size: 0.9rem;
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.juguete-check {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  background: var(--color-success);
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.25s ease;
+}
+
+.juguete-card.comprado .juguete-check {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+  .tienda-layout {
+    flex-direction: column;
+    gap: 30px;
+    padding: 20px;
+  }
+
+  .tienda-ema-section {
+    align-items: center;
+  }
+
+  #juguetes-grid {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 15px;
+  }
+}
+
+
+
+/* ========== CARD DE INSTRUCCIONES - TIENDA ========== */
+.tienda-ema-section .tienda-instruccion {
+  background: white;
+  border-radius: 24px;
+  padding: 24px 28px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  border: 3px solid #FFE8D6;
+  text-align: center;
+}
+
+.tienda-ema-section .tienda-instruccion h2 {
+  margin: 0 0 12px 0;
+  font-size: 1.5rem;
+  font-family: 'Fredoka One', cursive;
+  color: #FF6B35;
+  font-weight: 700;
+}
+
+.tienda-ema-section .tienda-instruccion p {
+  margin: 0;
+  font-size: 1rem;
+  color: #2D2D3A;
+  line-height: 1.6;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .tienda-estante {
+    padding: 15px;
+  }
+
+  #juguetes-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .juguete-emoji {
+    font-size: 2.5rem;
+  }
+
+  .juguete-nombre {
+    font-size: 0.85rem;
+  }
+
+  .juguete-precio {
+    font-size: 0.8rem;
+  }
+}
+

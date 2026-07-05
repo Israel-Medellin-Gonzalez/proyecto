@@ -1,0 +1,226 @@
+/* ============================
+   MÓDULO: MEMORIA
+   ============================ */
+
+#screen-memoria {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--bg-main);
+  font-family: 'Quicksand', 'Segoe UI', sans-serif;
+}
+
+/* ---------- HEADER ---------- */
+.memoria-header {
+  padding: 16px 20px;
+}
+
+.memoria-header .nav-back {
+  background: #ffffff;
+  border: 2px solid var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: 16px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.memoria-header .nav-back:hover {
+  background: var(--color-primary);
+  color: #ffffff;
+  transform: translateX(-3px);
+}
+
+/* ---------- CONTENIDO ---------- */
+.memoria-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+}
+
+.memoria-instruccion {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.memoria-instruccion h2 {
+  font-size: 28px;
+  color: var(--color-primary-dark);
+  margin: 0 0 6px;
+}
+
+.memoria-instruccion p {
+  font-size: 18px;
+  color: #5a5a5a;
+  margin: 0;
+}
+
+/* ---------- TABLERO (12 cartas, grid 4x3) ---------- */
+.memoria-tablero {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  width: 100%;
+  max-width: 480px;
+  perspective: 800px;
+}
+
+/* ---------- CARTAS ---------- */
+.memoria-carta {
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 38px;
+  background: var(--color-secondary);
+  color: #ffffff;
+  border-radius: 16px;
+  cursor: pointer;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s ease, background 0.25s ease, box-shadow 0.15s ease;
+  user-select: none;
+}
+
+.memoria-carta:hover {
+  transform: translateY(-3px) scale(1.04);
+}
+
+.memoria-carta:active {
+  transform: scale(0.95);
+}
+
+/* carta volteada (mostrando emoji, esperando verificación) */
+.memoria-carta.volteada {
+  background: #ffffff;
+  border: 3px solid var(--color-accent);
+  color: initial;
+  cursor: default;
+  animation: memoria-flip 0.35s ease;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.06);
+}
+
+/* carta ya encontrada (pareja confirmada) */
+.memoria-carta.encontrada {
+  background: var(--color-success);
+  color: #ffffff;
+  cursor: default;
+  animation: memoria-acierto 0.4s ease;
+  box-shadow: none;
+  opacity: 0.9;
+}
+
+@keyframes memoria-flip {
+  from { transform: rotateY(90deg); }
+  to   { transform: rotateY(0deg); }
+}
+
+@keyframes memoria-acierto {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+/* ---------- FOOTER / PROGRESO ---------- */
+.memoria-footer {
+  padding: 20px 24px 28px;
+}
+
+.memoria-progreso-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  margin-bottom: 6px;
+}
+
+/* (.progress-bar / .progress-bar__fill ya definidos globalmente
+   si usaste el mismo bloque del módulo Secuencias) */
+.progress-bar {
+  width: 100%;
+  height: 14px;
+  background: #ffffff;
+  border: 2px solid var(--color-secondary);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-bar__fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--color-secondary), var(--color-success));
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 480px) {
+  .memoria-tablero {
+    gap: 10px;
+    max-width: 360px;
+  }
+
+  .memoria-carta {
+    font-size: 28px;
+    border-radius: 12px;
+  }
+}
+
+/* ---------- ACCESIBILIDAD: REDUCIR MOVIMIENTO ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .memoria-carta,
+  .memoria-carta.volteada,
+  .memoria-carta.encontrada {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* ========== CARD DE INSTRUCCIONES ========== */
+.animales-instruccion,
+.clasifica-instruccion,
+.reloj-instruccion,
+.memoria-instruccion,
+.sec-instruccion,
+.vocal-objetivo-header,
+.inicial-instruccion,
+.manzanas-instruccion {
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 24px 32px;
+  margin: 20px auto;
+  max-width: 600px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.animales-instruccion h2,
+.clasifica-instruccion h2,
+.reloj-instruccion h2,
+.memoria-instruccion h2,
+.sec-instruccion h2,
+.vocal-objetivo-header h2,
+.inicial-instruccion h2,
+.manzanas-instruccion h2 {
+  margin: 0 0 12px 0;
+  font-size: 1.6rem;
+  color: var(--text-dark);
+}
+
+.animales-instruccion p,
+.clasifica-instruccion p,
+.reloj-instruccion p,
+.memoria-instruccion p,
+.sec-instruccion p,
+.vocal-objetivo-header p,
+.inicial-instruccion p,
+.manzanas-instruccion p {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text-medium);
+}

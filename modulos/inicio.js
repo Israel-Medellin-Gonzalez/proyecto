@@ -41,7 +41,6 @@ const ModuloInicio = (() => {
     desc: 'Agrupa los objetos',
     icon: '🧩',
     },
-    
     {
     id: 'secuencias',
     nombre: 'Secuencias',
@@ -49,7 +48,17 @@ const ModuloInicio = (() => {
     icon: '🔢',
     },
 
-   {
+    { id: 'animales', 
+      nombre: 'Animales', 
+      desc: '¿Qué animal es este?', icon: '🐘'
+    },
+
+    { id: 'memoria', 
+      nombre : 'Memoria', 
+      desc:'Encuentra las parejas iguales', icon: '🧠',  
+    },
+
+    {
       id: 'tienda',
       nombre: 'Tienda',
       desc: 'Compra tus premios',

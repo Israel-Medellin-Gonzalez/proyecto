@@ -61,8 +61,16 @@ const ModuloVocales = (() => {
       </div>
     `;
 
-    App.hablarVoz('¡Vamos a jugar! Toca todas las burbujas con la vocal que te indico. ¡Toca cuantas puedas!');
-    setTimeout(() => iniciarRonda(), 1300);
+    // FIX: antes se usaba un setTimeout(1300ms) fijo para arrancar la ronda,
+    // pero esta frase de bienvenida es más larga que eso y la siguiente
+    // instrucción ("Ahora busca la X") la cortaba a la mitad al cancelar
+    // el speech synth en curso. Ahora esperamos al evento real de "la frase
+    // terminó de decirse" (onEnd) antes de iniciar la ronda.
+    App.hablarVoz(
+      '¡Vamos a jugar! Toca todas las burbujas con la vocal que te indico. ¡Toca cuantas puedas!',
+      false,
+      () => { if (activo) iniciarRonda(); }
+    );
   }
 
   // ──────────────────────────────────────────────────
@@ -226,8 +234,11 @@ const ModuloVocales = (() => {
     if (area) area.innerHTML = '';
 
     if (rondaActual < TOTAL_RONDAS) {
-      App.hablarVoz(`¡Ronda terminada! Tuviste ${aciertos} aciertos. ¡Vamos por la siguiente!`);
-      setTimeout(() => iniciarRonda(), 2200);
+      App.hablarVoz(
+        `¡Ronda terminada! Tuviste ${aciertos} aciertos. ¡Vamos por la siguiente!`,
+        false,
+        () => { if (activo) iniciarRonda(); }
+      );
     } else {
       finalizarModulo();
     }
