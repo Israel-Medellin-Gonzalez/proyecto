@@ -1,39 +1,389 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🦊 Aventura de Aprendizaje</title>
-  <meta name="description" content="Aplicación educativa para niños: aprende vocales, el abecedario, el reloj y más." />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aventura de Aprendizaje</title>
 
-  <link rel="stylesheet" href="css/variables.css" />
-  <link rel="stylesheet" href="css/global.css" />
-  <link rel="stylesheet" href="css/inicio.css" />
-  <link rel="stylesheet" href="css/inicial.css" />
-  <link rel="stylesheet" href="css/vocales.css" />
-  <link rel="stylesheet" href="css/reloj.css" />
-  <link rel="stylesheet" href="css/manzanas.css" />
-  <link rel="stylesheet" href="css/tienda.css" />
-  <link rel="stylesheet" href="css/clasifica.css">
-  <link rel="stylesheet" href="css/secuencias.css">
-  <link rel="stylesheet" href="css/animales.css">
-  <link rel="stylesheet" href="css/memoria.css">
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/inicio.css">
+  <link rel="stylesheet" href="/css/inicial.css">
+  <link rel="stylesheet" href="/css/vocales.css">
+  <link rel="stylesheet" href="/css/reloj.css">
+  <link rel="stylesheet" href="/css/memoria.css">
+  <link rel="stylesheet" href="/css/manzanas.css">
+  <link rel="stylesheet" href="/css/tienda.css">
+  <link rel="stylesheet" href="/css/animales.css">
+  <link rel="stylesheet" href="/css/clasifica.css">
+  <link rel="stylesheet" href="/css/secuencias.css">
+
+  <!-- PWA - Progressive Web App -->
+  <meta name="theme-color" content="#FF6B35">
+  <meta name="description" content="App educativa interactiva para niños de preescolar. Funciona sin conexión a internet.">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icon-192.png" sizes="192x192">
+  <link rel="icon" href="/icon-512.png" sizes="512x512">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Aventura">
 </head>
 <body>
+  <div id="app"></div>
 
-<div id="app"></div>
-<div id="screen-secuencias" class="screen"></div>
-<div id="screen-animales" class="screen hidden"></div>
-  <script src="modulos/inicio.js"></script>
-  <script src="modulos/inicial.js"></script>
-  <script src="modulos/vocales.js"></script>
-  <script src="modulos/reloj.js"></script>
-  <script src="modulos/manzanas.js"></script> 
-  <script src="modulos/tienda.js"></script>
-  <script src="modulos/clasifica.js"></script>
-  <script src="modulos/secuencias.js"></script>
-  <script src="modulos/animales.js"></script>
-  <script src="modulos/memoria.js"></script>
-  <script src="modulos/app.js"></script>
+  <!-- JavaScript de módulos -->
+  <script src="/modulos/app.js"></script>
+  <script src="/modulos/inicio.js"></script>
+  <script src="/modulos/inicial.js"></script>
+  <script src="/modulos/vocales.js"></script>
+  <script src="/modulos/reloj.js"></script>
+  <script src="/modulos/memoria.js"></script>
+  <script src="/modulos/manzanas.js"></script>
+  <script src="/modulos/tienda.js"></script>
+  <script src="/modulos/animales.js"></script>
+  <script src="/modulos/clasifica.js"></script>
+  <script src="/modulos/secuencias.js"></script>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(registration => {
+            console.log('✅ Service Worker registrado:', registration);
+          })
+          .catch(error => {
+            console.error('❌ Error registrando SW:', error);
+          });
+      });
+    }
+  </script>
+
+  <!-- POPUP PARA DESCARGAR LA APP -->
+  <div id="installPrompt" class="install-prompt">
+    <div class="install-card">
+      <button class="close-btn" onclick="cerrarPopup()">✕</button>
+      
+      <div class="install-header">
+        <h2>📱 Instala Aventura de Aprendizaje</h2>
+        <p>Funciona sin conexión a internet</p>
+      </div>
+      
+      <div class="install-benefits">
+        <div class="benefit">
+          <span class="icon">📡</span>
+          <p><strong>Sin Internet</strong><br>Funciona offline perfectamente</p>
+        </div>
+        <div class="benefit">
+          <span class="icon">⚡</span>
+          <p><strong>Muy Rápida</strong><br>Carga instantáneamente</p>
+        </div>
+        <div class="benefit">
+          <span class="icon">🎓</span>
+          <p><strong>Para Zonas Rurales</strong><br>Ideal para enseñar en cualquier lugar</p>
+        </div>
+      </div>
+      
+      <div class="install-buttons">
+        <button id="installBtn" class="btn-install" onclick="instalarApp()">
+          ⬇️ INSTALAR AHORA
+        </button>
+        <button class="btn-cancel" onclick="cerrarPopup()">
+          Cancelar
+        </button>
+      </div>
+      
+      <p class="install-note">
+        💡 Una vez instalada, podrás usarla sin internet en cualquier momento
+      </p>
+    </div>
+  </div>
+
+  <!-- ESTILOS DEL POPUP -->
+  <style>
+  .install-prompt {
+    display: none !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fredoka One', cursive;
+  }
+
+  .install-prompt.show {
+    display: flex !important;
+  }
+
+  .install-card {
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    position: relative;
+    animation: slideUp 0.3s ease-out;
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(50px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #f0f0f0;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .close-btn:hover {
+    background: #e0e0e0;
+    transform: scale(1.1);
+  }
+
+  .close-btn:active {
+    background: #d0d0d0;
+  }
+
+  .install-header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .install-header h2 {
+    margin: 0 0 10px 0;
+    font-size: 1.8rem;
+    color: #FF6B35;
+    font-family: 'Fredoka One', cursive;
+  }
+
+  .install-header p {
+    margin: 0;
+    color: #5A5A6E;
+    font-size: 1rem;
+  }
+
+  .install-benefits {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 15px;
+    margin: 30px 0;
+  }
+
+  .benefit {
+    text-align: center;
+    padding: 15px;
+    background: #FFF9F0;
+    border-radius: 12px;
+  }
+
+  .benefit .icon {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .benefit p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #2D2D3A;
+    line-height: 1.4;
+  }
+
+  .benefit strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #FF6B35;
+  }
+
+  .install-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 30px;
+  }
+
+  .btn-install {
+    flex: 1;
+    padding: 14px 20px;
+    background: #FF6B35;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Fredoka One', cursive;
+  }
+
+  .btn-install:hover {
+    background: #E55A25;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+  }
+
+  .btn-install:active {
+    transform: translateY(0);
+  }
+
+  .btn-cancel {
+    flex: 1;
+    padding: 14px 20px;
+    background: #f0f0f0;
+    color: #2D2D3A;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'Fredoka One', cursive;
+  }
+
+  .btn-cancel:hover {
+    background: #e0e0e0;
+    border-color: #d0d0d0;
+  }
+
+  .btn-cancel:active {
+    background: #d0d0d0;
+    border-color: #c0c0c0;
+  }
+
+  .install-note {
+    text-align: center;
+    font-size: 0.95rem;
+    color: #4ECDC4;
+    margin: 20px 0 0 0;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 600px) {
+    .install-card {
+      padding: 30px 20px;
+    }
+
+    .install-header h2 {
+      font-size: 1.5rem;
+    }
+
+    .install-benefits {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .benefit p {
+      font-size: 0.8rem;
+    }
+
+    .btn-install,
+    .btn-cancel {
+      padding: 12px 16px;
+      font-size: 1rem;
+    }
+  }
+  </style>
+
+  <!-- JAVASCRIPT DEL POPUP -->
+  <script>
+  let deferredPrompt = null;
+  const installPromptElement = document.getElementById('installPrompt');
+  let popupMostrado = false;
+
+  console.log('🚀 Script de PWA iniciado');
+
+  // Escuchar el evento beforeinstallprompt
+  window.addEventListener('beforeinstallprompt', (e) => {
+    console.log('✅ beforeinstallprompt detectado');
+    e.preventDefault();
+    deferredPrompt = e;
+    
+    // Mostrar popup después de 3 segundos
+    if (!popupMostrado) {
+      setTimeout(() => {
+        abrirPopup();
+      }, 3000);
+    }
+  });
+
+  // Función para abrir el popup
+  function abrirPopup() {
+    console.log('📱 Abriendo popup...');
+    installPromptElement.classList.add('show');
+    popupMostrado = true;
+    console.log('✅ Popup abierto');
+  }
+
+  // Función para cerrar el popup
+  function cerrarPopup() {
+    console.log('❌ Cerrando popup...');
+    installPromptElement.classList.remove('show');
+    console.log('✅ Popup cerrado');
+  }
+
+  // Función para instalar la app
+  function instalarApp() {
+    console.log('⬇️ Iniciando instalación...');
+    
+    if (!deferredPrompt) {
+      console.error('❌ deferredPrompt no disponible');
+      alert('La app ya está instalada o tu navegador no lo soporta.\n\nPara instalar:\n1. Abre el menú ⋮\n2. Busca "Instalar"');
+      return;
+    }
+
+    deferredPrompt.prompt();
+
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('✅ Usuario aceptó la instalación');
+        cerrarPopup();
+        alert('🎉 ¡Aventura de Aprendizaje instalada!\n\nYa puedes usarla sin internet.\n\n📱 Busca el ícono en tu pantalla de inicio.');
+      } else {
+        console.log('❌ Usuario rechazó la instalación');
+      }
+
+      deferredPrompt = null;
+    });
+  }
+
+  // Cuando la app está instalada
+  window.addEventListener('appinstalled', () => {
+    console.log('✅ App instalada correctamente');
+    cerrarPopup();
+    deferredPrompt = null;
+  });
+
+  // FALLBACK: Mostrar popup después de 5 segundos incluso sin beforeinstallprompt
+  setTimeout(() => {
+    console.log('⏰ Verificando si mostrar popup por fallback...');
+    if (!popupMostrado) {
+      console.log('⚠️  beforeinstallprompt no se disparó, mostrando popup por fallback');
+      abrirPopup();
+    }
+  }, 5000);
+
+  console.log('✅ Script de PWA cargado correctamente');
+  </script>
 </body>
 </html>

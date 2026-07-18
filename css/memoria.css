@@ -50,14 +50,22 @@
 
 .memoria-instruccion h2 {
   font-size: 28px;
-  color: var(--color-primary-dark);
+  color: var(--text-dark);
   margin: 0 0 6px;
+  font-weight: 700;
 }
 
 .memoria-instruccion p {
   font-size: 18px;
-  color: #5a5a5a;
+  color: var(--text-medium);
   margin: 0;
+  min-height: 28px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* ---------- TABLERO (12 cartas, grid 4x3) ---------- */
@@ -67,7 +75,7 @@
   gap: 14px;
   width: 100%;
   max-width: 480px;
-  perspective: 800px;
+  perspective: 1000px;
 }
 
 /* ---------- CARTAS ---------- */
@@ -77,52 +85,108 @@
   align-items: center;
   justify-content: center;
   font-size: 38px;
-  background: var(--color-secondary);
-  color: #ffffff;
   border-radius: 16px;
   cursor: pointer;
-  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.08);
-  transition: transform 0.25s ease, background 0.25s ease, box-shadow 0.15s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   user-select: none;
+  font-weight: 700;
 }
 
-.memoria-carta:hover {
-  transform: translateY(-3px) scale(1.04);
+/* ===== MODO PREVIEW: MOSTRAR TODOS LOS EMOJIS ===== */
+.memoria-carta-preview {
+  background: linear-gradient(135deg, #FFE8D6 0%, #FFD6B3 100%);
+  color: initial;
+  font-size: 42px;
+  cursor: default;
+  animation: previeuEntrada 0.4s ease;
+  box-shadow: 0 8px 16px rgba(255, 107, 53, 0.2);
+  border: 3px solid var(--color-primary);
+  pointer-events: none;
 }
 
-.memoria-carta:active {
+@keyframes previeuEntrada {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ===== ESTADO 1: SIN VOLTEAR ===== */
+.memoria-carta.no-volteada {
+  background: linear-gradient(135deg, var(--color-secondary) 0%, #4DB8AE 100%);
+  color: #E91E8C;
+  font-size: 32px;
+  box-shadow: 0 6px 12px rgba(78, 205, 196, 0.3);
+}
+
+.memoria-carta.no-volteada:hover {
+  transform: translateY(-6px) scale(1.05);
+  box-shadow: 0 8px 16px rgba(78, 205, 196, 0.5);
+}
+
+.memoria-carta.no-volteada:active {
   transform: scale(0.95);
+  box-shadow: 0 2px 4px rgba(78, 205, 196, 0.3);
 }
 
-/* carta volteada (mostrando emoji, esperando verificación) */
+/* ===== ESTADO 2: VOLTEADA (Mostrando emoji) ===== */
 .memoria-carta.volteada {
-  background: #ffffff;
-  border: 3px solid var(--color-accent);
+  background: linear-gradient(135deg, #FFFFFF 0%, #F5F5F5 100%);
   color: initial;
   cursor: default;
-  animation: memoria-flip 0.35s ease;
-  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.06);
+  animation: memoria-flip 0.35s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  border: 3px solid var(--color-accent);
+  font-size: 42px;
 }
 
-/* carta ya encontrada (pareja confirmada) */
+/* ===== ESTADO 3: ENCONTRADA (Pareja confirmada) ===== */
 .memoria-carta.encontrada {
-  background: var(--color-success);
+  background: linear-gradient(135deg, var(--color-success) 0%, #5CB85C 100%);
   color: #ffffff;
   cursor: default;
-  animation: memoria-acierto 0.4s ease;
-  box-shadow: none;
-  opacity: 0.9;
+  animation: memoria-acierto 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  box-shadow: 0 6px 12px rgba(107, 203, 119, 0.4);
+  border: 3px solid #4CAF50;
+  font-size: 42px;
+  transform: scale(1);
 }
 
+/* ANIMACIONES */
 @keyframes memoria-flip {
-  from { transform: rotateY(90deg); }
-  to   { transform: rotateY(0deg); }
+  0% {
+    transform: rotateY(90deg) scale(0.95);
+    opacity: 0.7;
+  }
+  50% {
+    transform: rotateY(45deg) scale(0.98);
+  }
+  100% {
+    transform: rotateY(0deg) scale(1);
+    opacity: 1;
+  }
 }
 
 @keyframes memoria-acierto {
-  0%   { transform: scale(1); }
-  40%  { transform: scale(1.12); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1) rotateZ(0deg);
+  }
+  25% {
+    transform: scale(1.15) rotateZ(-5deg);
+  }
+  50% {
+    transform: scale(1.15) rotateZ(5deg);
+  }
+  75% {
+    transform: scale(1.1) rotateZ(-2deg);
+  }
+  100% {
+    transform: scale(1) rotateZ(0deg);
+  }
 }
 
 /* ---------- FOOTER / PROGRESO ---------- */
@@ -135,12 +199,10 @@
   justify-content: space-between;
   font-size: 14px;
   font-weight: 700;
-  color: var(--color-primary-dark);
+  color: var(--text-dark);
   margin-bottom: 6px;
 }
 
-/* (.progress-bar / .progress-bar__fill ya definidos globalmente
-   si usaste el mismo bloque del módulo Secuencias) */
 .progress-bar {
   width: 100%;
   height: 14px;
@@ -148,6 +210,7 @@
   border: 2px solid var(--color-secondary);
   border-radius: 999px;
   overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 .progress-bar__fill {
@@ -169,11 +232,30 @@
     font-size: 28px;
     border-radius: 12px;
   }
+
+  .memoria-carta-preview {
+    font-size: 32px;
+  }
+
+  .memoria-carta.volteada,
+  .memoria-carta.encontrada {
+    font-size: 32px;
+  }
+
+  .memoria-instruccion h2 {
+    font-size: 24px;
+  }
+
+  .memoria-instruccion p {
+    font-size: 16px;
+  }
 }
 
 /* ---------- ACCESIBILIDAD: REDUCIR MOVIMIENTO ---------- */
 @media (prefers-reduced-motion: reduce) {
   .memoria-carta,
+  .memoria-carta-preview,
+  .memoria-carta.no-volteada,
   .memoria-carta.volteada,
   .memoria-carta.encontrada {
     animation: none;
@@ -210,6 +292,7 @@
   margin: 0 0 12px 0;
   font-size: 1.6rem;
   color: var(--text-dark);
+  font-weight: 700;
 }
 
 .animales-instruccion p,
